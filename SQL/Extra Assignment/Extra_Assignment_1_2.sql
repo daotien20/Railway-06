@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS trainee(
 	trainee_id		 	MEDIUMINT PRIMARY KEY AUTO_INCREMENT,
 	full_name		 	VARCHAR(100) NOT NULL,
 	birth_date			DATE NOT NULL,
-	gender			 	ENUM('male','female','unknown')
+	gender			 	ENUM('male','female','unknown'),
 	et_iq				TINYINT UNSIGNED,
 	et_gmath		 	TINYINT UNSIGNED,
 	et_english		 	TINYINT UNSIGNED,

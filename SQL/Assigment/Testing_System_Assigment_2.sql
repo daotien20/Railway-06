@@ -18,8 +18,8 @@ DROP TABLE IF EXISTS `account`;
 CREATE TABLE IF NOT EXISTS `account` (
 	account_id		SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
 	email			VARCHAR(100) UNIQUE KEY NOT NULL,
-	user_name		VARCHAR(50) UNIQUE KEY,
-	full_name		VARCHAR(50) NOT NULL,
+	user_name		VARCHAR(50) UNIQUE KEY NOT NULL,
+	full_name		NVARCHAR(50),
 	department_id	TINYINT UNSIGNED,
 	position_id		TINYINT UNSIGNED,
 	creat_date		DATE,
@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS `group` (
 	group_id		TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
 	group_name		VARCHAR(200),
 	creator_id		SMALLINT UNSIGNED,
-	creat_date		DATE
+	creat_date		DATE,
+	FOREIGN KEY (creator_id) REFERENCES `account` (account_id) 
 );
 
 DROP TABLE IF EXISTS group_account;
@@ -64,7 +65,8 @@ CREATE TABLE IF NOT EXISTS question (
 	creator_id		SMALLINT UNSIGNED,
 	creat_date		DATE,
 	FOREIGN KEY (category_id)	REFERENCES category_question(category_id),
-	FOREIGN KEY (type_id)		REFERENCES type_question (type_id)
+	FOREIGN KEY (type_id)		REFERENCES type_question (type_id),
+	FOREIGN KEY (creator_id) REFERENCES `account` (account_id) 
 );
 
 DROP TABLE IF EXISTS answer;
@@ -85,7 +87,8 @@ CREATE TABLE IF NOT EXISTS exam (
 	duration		TINYINT UNSIGNED,
 	creator_id		SMALLINT UNSIGNED,
 	creat_date		DATE,
-	FOREIGN KEY (category_id)	REFERENCES category_question (category_id)
+	FOREIGN KEY (category_id)	REFERENCES category_question (category_id),
+	FOREIGN KEY (creator_id) 	REFERENCES `account` (account_id) 
 );
 
 DROP TABLE IF EXISTS exam_question;
