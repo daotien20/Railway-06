@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS data_type_1(
 	id					MEDIUMINT PRIMARY KEY AUTO_INCREMENT,
 	`name`				VARCHAR(50),
 	`code`				VARCHAR(5) UNIQUE KEY,
-	modified_date		DATETIME
+	modified_date		DATETIME DEFAULT NOW()
 );
 
 -- Exercise 3
@@ -35,6 +35,32 @@ CREATE TABLE IF NOT EXISTS data_type_2(
 	id					MEDIUMINT PRIMARY KEY AUTO_INCREMENT,
 	`name`				VARCHAR(100),
 	birth_date			DATE,
-	gender				ENUM('0','1','NULL'),
-	is_deleted_flag		ENUM('0','1')
+	gender				BIT,
+	is_deleted_flag		BIT
 );
+
+INSERT INTO data_type_2 (`name`,gender)
+VALUES	(N'User1', 1),
+		(N'User2', 0),
+		(N'User3', 1),
+		(N'User4', 1);
+
+SELECT *,
+	CASE gender
+	WHEN 0 THEN 'Male'
+    WHEN 1 THEN 'Female'
+    ELSE 'Unknown' END
+FROM data_type_2;
+
+INSERT INTO data_type_2 (`name`,is_deleted_flag)
+VALUES	(N'User1', 1),
+		(N'User2', 0),
+		(N'User3', 1),
+		(N'User4', 1);
+
+SELECT *,
+	CASE is_deleted_flag
+	WHEN 0 THEN 'active'
+    WHEN 1 THEN 'deleted'
+    ELSE 'Unknown' END
+FROM data_type_2;
