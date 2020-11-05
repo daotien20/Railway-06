@@ -336,45 +336,58 @@ JOIN position USING (position_id)
 WHERE position_name = 'Dev';
 
 -- Q4: Lấy ra danh sách phòng ban có > 3 nhân viên --------------------------------------------
-SELECT department_id, department_name, COUNT(department_id) AS 'Số nhân viên'
+SELECT department_id, department_name, COUNT(account_id) AS 'Số nhân viên'
 FROM department
 JOIN `account` USING (department_id)
 GROUP BY department_id
 HAVING COUNT(department_id) > 3;
 
 -- Q5: Lấy ra danh sách câu hỏi được sử dụng trong đề thi nhiều nhất --------------------------
-SELECT question_id, q_content, COUNT(*) AS 'Tổng số câu hỏi'
+SELECT question_id, q_content, COUNT(*) AS 'Tổng số câu hỏi', GROUP_CONCAT(exam_id)
 FROM question
 JOIN exam_question USING (question_id)
 GROUP BY question_id
 ORDER BY COUNT(*) DESC
 LIMIT 1;
 
+-- Dùng truy vấn con
+SELECT question_id, q_content, GROUP_CONCAT(exam_id), COUNT(1) AS 'Tổng số câu hỏi'
+FROM question
+JOIN exam_question USING (question_id)
+GROUP BY question_id
+HAVING COUNT(1) = (
+	SELECT COUNT(1)
+    FROM exam_question
+    GROUP BY question_id
+	ORDER BY COUNT(*) DESC
+	LIMIT 1
+    );
+
 -- Q6: Thống kê mỗi CategoryQuestion có bao nhiêu Question ------------------------------------
-SELECT *, COUNT(category_id) AS 'Số Question', GROUP_CONCAT(q_content) AS 'Nội dung'
+SELECT *, COUNT(question_id) AS 'Số Question', GROUP_CONCAT(q_content) AS 'Nội dung'
 FROM question
 JOIN category_question USING (category_id)
 GROUP BY category_id
 ORDER BY category_id ASC;
 
 -- Q7: Thống kê mỗi Question xuất hiện trong bao nhiêu Exam -----------------------------------
-SELECT question_id, COUNT(question_id) AS 'Tổng số Exam xuất hiện', GROUP_CONCAT(exam_id) AS exam_id
+SELECT question_id, COUNT(exam_id) AS 'Tổng số Exam xuất hiện', GROUP_CONCAT(exam_id) AS exam_id
 FROM exam_question
 JOIN question USING (question_id)
 GROUP BY question_id
 ORDER BY COUNT(question_id) DESC;
 
 -- Q8: Lấy ra Question có nhiều câu trả lời nhất -----------------------------------------------
-SELECT question_id, q_content AS 'Question', COUNT(question_id) AS 'Số câu trả lời', GROUP_CONCAT(a_content) AS 'Answer'
+SELECT question_id, q_content AS 'Question', COUNT(answer_id) AS 'Số câu trả lời', GROUP_CONCAT(a_content) AS 'Answer'
 FROM answer
 JOIN question USING (question_id)
 GROUP BY question_id
 ORDER BY COUNT(question_id) DESC;
 
 -- Q9: Thống kê số lượng account trong mỗi group ------------------------------------------------
-SELECT group_id, COUNT(group_id) AS 'Số thành viên', GROUP_CONCAT(user_name) AS 'Thành viên'
+SELECT group_id, COUNT(account_id) AS 'Số thành viên', GROUP_CONCAT(user_name) AS 'Thành viên'
 FROM `account`
-JOIN  group_account USING (account_id)
+LEFT JOIN  group_account USING (account_id)
 GROUP BY group_id
 ORDER BY group_id ASC;
 
@@ -424,7 +437,7 @@ LEFT JOIN `account` ac			ON q.creator_id  = ac.account_id
 ORDER BY question_id ASC;
 
 -- Q13: Lấy số lượng câu hỏi của mỗi loại tự luận hay trắc nghiệm ---------------------------------
-SELECT type_id, type_name AS 'Loại câu hỏi', COUNT(type_id) AS 'Số lượng câu hỏi', GROUP_CONCAT(q_content) AS 'Câu hỏi cụ thể'
+SELECT type_id, type_name AS 'Loại câu hỏi', COUNT(question_id) AS 'Số lượng câu hỏi', GROUP_CONCAT(q_content) AS 'Câu hỏi cụ thể'
 FROM type_question
 JOIN question USING (type_id)
 GROUP BY type_id;
