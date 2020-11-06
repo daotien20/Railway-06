@@ -332,7 +332,7 @@ WHERE create_date > '2010-12-20';
 -- Q3: Lấy ra tất cả các Dev ------------------------------------------------------------------
 SELECT *
 FROM `account`
-JOIN position USING (position_id)
+RIGHT JOIN position USING (position_id)
 WHERE position_name = 'Dev';
 
 -- Q4: Lấy ra danh sách phòng ban có > 3 nhân viên --------------------------------------------
@@ -343,14 +343,6 @@ GROUP BY department_id
 HAVING COUNT(department_id) > 3;
 
 -- Q5: Lấy ra danh sách câu hỏi được sử dụng trong đề thi nhiều nhất --------------------------
-SELECT question_id, q_content, COUNT(*) AS 'Tổng số câu hỏi', GROUP_CONCAT(exam_id)
-FROM question
-JOIN exam_question USING (question_id)
-GROUP BY question_id
-ORDER BY COUNT(*) DESC
-LIMIT 1;
-
--- Dùng truy vấn con
 SELECT question_id, q_content, GROUP_CONCAT(exam_id), COUNT(1) AS 'Tổng số câu hỏi'
 FROM question
 JOIN exam_question USING (question_id)
@@ -359,61 +351,63 @@ HAVING COUNT(1) = (
 	SELECT COUNT(1)
     FROM exam_question
     GROUP BY question_id
-	ORDER BY COUNT(*) DESC
+	ORDER BY COUNT(1) DESC
 	LIMIT 1
     );
 
--- Q6: Thống kê mỗi CategoryQuestion có bao nhiêu Question ------------------------------------
+-- Q6: Thống kê mỗi CategoryQuestion được sử dụng trong bao nhiêu Question ------------------------------------
 SELECT *, COUNT(question_id) AS 'Số Question', GROUP_CONCAT(q_content) AS 'Nội dung'
 FROM question
-JOIN category_question USING (category_id)
+RIGHT JOIN category_question USING (category_id)
 GROUP BY category_id
 ORDER BY category_id ASC;
 
--- Q7: Thống kê mỗi Question xuất hiện trong bao nhiêu Exam -----------------------------------
-SELECT question_id, COUNT(exam_id) AS 'Tổng số Exam xuất hiện', GROUP_CONCAT(exam_id) AS exam_id
+-- Q7: Thống kê mỗi Question được sử dụng trong bao nhiêu Exam -----------------------------------
+SELECT question_id, COUNT(exam_id) AS 'Số Exam', GROUP_CONCAT(exam_id) AS exam_id
 FROM exam_question
-JOIN question USING (question_id)
+RIGHT JOIN question USING (question_id)
 GROUP BY question_id
-ORDER BY COUNT(question_id) DESC;
+ORDER BY question_id ASC;
 
 -- Q8: Lấy ra Question có nhiều câu trả lời nhất -----------------------------------------------
-SELECT question_id, q_content AS 'Question', COUNT(answer_id) AS 'Số câu trả lời', GROUP_CONCAT(a_content) AS 'Answer'
+SELECT question_id, q_content AS 'Question', COUNT(1) AS 'Số câu trả lời', GROUP_CONCAT(a_content) AS 'Answer'
 FROM answer
 JOIN question USING (question_id)
 GROUP BY question_id
-ORDER BY COUNT(question_id) DESC;
+HAVING COUNT(1) = (
+	SELECT COUNT(1)
+    FROM answer
+    GROUP BY question_id
+    ORDER BY COUNT(1) DESC
+    LIMIT 1
+    );
 
 -- Q9: Thống kê số lượng account trong mỗi group ------------------------------------------------
-SELECT group_id, COUNT(account_id) AS 'Số thành viên', GROUP_CONCAT(user_name) AS 'Thành viên'
-FROM `account`
-LEFT JOIN  group_account USING (account_id)
+SELECT group_id, group_name, COUNT(account_id) AS 'Số thành viên'
+FROM group_account
+RIGHT JOIN `group` USING (group_id)
 GROUP BY group_id
 ORDER BY group_id ASC;
 
 -- Q10: Tìm chức vụ có ít người nhất ------------------------------------------------------------
-SELECT position_id, position_name, COUNT(position_id) AS 'Số người'
-FROM position
-JOIN `account` USING (position_id)
+SELECT position_id, position_name, COUNT(1) AS 'Số người'
+FROM `account`
+JOIN position USING (position_id)
 GROUP BY position_id
-ORDER BY COUNT(position_id) ASC;
+HAVING  COUNT(1) = (
+	SELECT COUNT(1)
+    FROM `account`
+    GROUP BY position_id
+	ORDER BY COUNT(1) ASC
+    LIMIT 1
+    );
     
--- Q11: ----------------------------------------------------------------------------------------
-ALTER TABLE `account`
-ADD COLUMN depart_posi VARCHAR(50);
-
-SET SQL_SAFE_UPDATES = 0;
-UPDATE `account`
-SET depart_posi = CONCAT(department_id, '_',position_id)
-WHERE depart_posi IS NULL;
-
-SELECT d.department_id, d.department_name, p.position_id, p.position_name, a.depart_posi, COUNT(depart_posi)
-FROM `account` a
-RIGHT JOIN department d	ON a.department_id = d.department_id
-RIGHT JOIN position p	ON a.position_id = p.position_id
-WHERE p.position_name	IN ('Dev', 'Test', 'Scrum', 'Master', 'PM')
-GROUP BY depart_posi
-ORDER BY department_id ASC;
+-- Q11: Thống kê mỗi phòng ban có bao nhiêu nhân viên thuộc 1 trong 4 chức vụ (dev, test, scrum master, PM)
+SELECT * , COUNT(department_id)
+FROM `account`
+JOIN position USING (position_id)
+WHERE position_name IN('Dev', 'Test', 'Scrum Master', 'PM')
+GROUP BY department_id;
 
 -- Q12: Lấy các thông tin chi tiết của câu hỏi ---------------------------------------------------
 SELECT	q.question_id, c.category_name AS 'Chủ đề câu hỏi', q.q_content AS 'Câu hỏi', 
@@ -437,7 +431,8 @@ LEFT JOIN `account` ac			ON q.creator_id  = ac.account_id
 ORDER BY question_id ASC;
 
 -- Q13: Lấy số lượng câu hỏi của mỗi loại tự luận hay trắc nghiệm ---------------------------------
-SELECT type_id, type_name AS 'Loại câu hỏi', COUNT(question_id) AS 'Số lượng câu hỏi', GROUP_CONCAT(q_content) AS 'Câu hỏi cụ thể'
+SELECT type_id, type_name AS 'Loại câu hỏi', COUNT(type_id) AS 'Số lượng câu hỏi', 
+		GROUP_CONCAT(q_content) AS 'Câu hỏi cụ thể'
 FROM type_question
 JOIN question USING (type_id)
 GROUP BY type_id;
