@@ -352,7 +352,7 @@ CREATE PROCEDURE luong_question ()
 	BEGIN
 		SELECT type_id, type_name, create_date, COUNT(type_id)
         FROM type_question
-        JOIN question USING (type_id)
+        LEFT JOIN question USING (type_id)
         WHERE YEAR(create_date) = YEAR(NOW()) && MONTH(create_date) = MONTH(NOW())
         GROUP BY type_id
 		;
@@ -364,46 +364,45 @@ CALL assignment_6.luong_question();
 -- Q4: Tạo store để trả ra id của type question có nhiều câu hỏi nhất
 DROP PROCEDURE IF EXISTS max_question;
 DELIMITER $$
-CREATE PROCEDURE max_question ()
+CREATE PROCEDURE max_question (OUT type_question_id INT)
 	BEGIN
-		SELECT type_id, COUNT(type_id)
-        FROM type_question
-        JOIN question USING (type_id)
+		SELECT type_id INTO type_question_id
+        FROM question
         GROUP BY type_id
-        HAVING COUNT(type_id) = (
-			SELECT COUNT(type_id)
+        HAVING COUNT(1) = (
+			SELECT COUNT(1)
             FROM question
             GROUP BY type_id
-            ORDER BY COUNT(type_id) DESC
+            ORDER BY COUNT(1) DESC
             LIMIT 1
             )
-		;
+		LIMIT 1;
 	END $$
 DELIMITER ;
 
-CALL assignment_6.max_question();
+SET @type_question_id =0;
+CALL assignment_6.max_question(@type_question_id);
+SELECT @type_question_id;
 
 -- Q5: Sử dụng store ở question 4 để tìm ra tên của type question
 DROP PROCEDURE IF EXISTS max_question1;
 DELIMITER $$
 CREATE PROCEDURE max_question1 ()
 	BEGIN
-		SELECT type_name, COUNT(type_id)
-        FROM type_question
-        JOIN question USING (type_id)
-        GROUP BY type_id
-        HAVING COUNT(type_id) = (
-			SELECT COUNT(type_id)
-            FROM question
-            GROUP BY type_id
-            ORDER BY COUNT(type_id) DESC
-            LIMIT 1
-            )
+		DECLARE type_question_id INT;
+        SET @type_question_id =0;
+		CALL assignment_6.max_question(@type_question_id);
+		SELECT @type_question_id;
+        
+		SELECT type_name
+		FROM type_question
+		WHERE type_id = @type_question_id
 		;
 	END $$
 DELIMITER ;
 
 CALL assignment_6.max_question1();
+
 
 -- Q6: Viết 1 store cho phép người dùng nhập vào 1 chuỗi và trả về group có tên chứa chuỗi của người dùng nhập vào
 		-- hoặc trả về user có username chứa chuỗi của người dùng nhập vào
@@ -411,34 +410,34 @@ DROP PROCEDURE IF EXISTS abc;
 DELIMITER $$
 CREATE PROCEDURE abc (IN input VARCHAR(100))
 	BEGIN
-		SELECT 	g.group_name, a.user_name
-        FROM 	group_account ga
-        JOIN 	`account` a 	ON ga.account_id = a.account_id
-        JOIN 	`group` g		ON ga.group_id 	= g.group_id
-        WHERE 	g.group_name LIKE CONCAT('%', input, '%') OR 
-				a.user_name LIKE CONCAT('%', input, '%')
-		;
+		SELECT 	group_name AS `name`, 'group' AS `type`
+        FROM 	`group`
+        WHERE 	group_name LIKE CONCAT('%', input, '%') 
+		
+        UNION
+        SELECT 	user_name AS `name`, 'account' AS `type`
+        FROM 	`account`
+        WHERE 	user_name LIKE CONCAT('%', input, '%') ;
 	END $$
 DELIMITER ;
 
-CALL assignment_6.abc('lmt');
+CALL assignment_6.abc('a');
 -- Q7: 
-DROP PROCEDURE IF EXISTS log_in;
+DROP PROCEDURE IF EXISTS new_account;
 DELIMITER $$
-CREATE PROCEDURE log_in (IN your_name VARCHAR(100), your_email VARCHAR(150))
+CREATE PROCEDURE new_account (IN your_name VARCHAR(100), your_email VARCHAR(150))
 	BEGIN
 		INSERT INTO `account`
         SET email = your_email,
-			user_name = LOWER(SUBSTR(email,1,LOCATE('@',email) - 1)),
+			user_name = LOWER(SUBSTRING_INDEX(email,'@',1)), 
             full_name = your_name,
-			position_id = 0,
-            department_id = 0,
+			position_id = 999999,
+            department_id = 999999,
             create_date = NOW();
 	END $$
 DELIMITER ;
 
-CALL assignment_6.log_in('Hùng Ưng Vẫy Cánh', 'hungung@gmail.com');
-CALL assignment_6.log_in('Bạch Tuộc Bốn Chân', 'bachtuoc11@gmail.com');
+SELECT * FROM `account`;
 
 -- Q8: Viết 1 store cho phép người dùng nhập vào Essay hay Mulitiple-Choice để thống kê câu hỏi Essay hay Multiple_Choice nào có content dài nhất
 DROP PROCEDURE IF EXISTS long_content;
@@ -508,14 +507,51 @@ DELIMITER ;
 CALL assignment_6.delete_department('marketing');
 
 -- Q12: Viết store để in ra mỗi tháng có bao nhiêu câu hỏi được tạo trong năm nay
+CREATE VIEW view12 AS
+SELECT EachMonthInYear.MONTH
+FROM
+	(
+				SELECT 1 AS MONTH
+				UNION SELECT 2 AS MONTH
+				UNION SELECT 3 AS MONTH
+				UNION SELECT 4 AS MONTH
+				UNION SELECT 5 AS MONTH
+				UNION SELECT 6 AS MONTH
+				UNION SELECT 7 AS MONTH
+				UNION SELECT 8 AS MONTH
+				UNION SELECT 9 AS MONTH
+				UNION SELECT 10 AS MONTH
+				UNION SELECT 11 AS MONTH
+				UNION SELECT 12 AS MONTH
+	) AS EachMonthInYear;
+
 DROP PROCEDURE IF EXISTS year_question;
 DELIMITER $$
 CREATE PROCEDURE year_question ()
 	BEGIN
-		SELECT MONTH(create_date), COUNT(question_id), GROUP_CONCAT(question_id)
-        FROM question
-        WHERE YEAR(create_date) = YEAR(NOW())
-        GROUP BY MONTH(create_date);
+		DROP TABLE IF EXISTS bang_tam;
+        CREATE TABLE IF NOT EXISTS bang_tam (
+        question_id		SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+		q_content		TEXT,
+		category_id		TINYINT UNSIGNED,
+		type_id			SMALLINT UNSIGNED,
+		creator_id		SMALLINT UNSIGNED,
+		create_date		DATE);
+        
+        INSERT INTO bang_tam
+        SELECT *
+        FROM question;
+		
+        SET SQL_SAFE_UPDATES =0;
+		UPDATE bang_tam
+		SET create_date = NULL
+        WHERE YEAR(create_date) != YEAR(NOW());
+        
+		SELECT *, COUNT(b.question_id)
+        FROM view12
+        LEFT JOIN bang_tam b ON view12.MONTH = MONTH(b.create_date)
+        GROUP BY view12.MONTH
+        ORDER BY view12.MONTH ASC;
 	END $$
 DELIMITER ;
 
@@ -525,12 +561,29 @@ CALL assignment_6.year_question();
 -- Nếu tháng nào không có thì sẽ in ra "không có câu trả lời nào trong tháng"
 DROP PROCEDURE IF EXISTS month_question;
 DELIMITER $$
-CREATE PROCEDURE month_question ()
-	BEGIN
-		SELECT MONTH(create_date), COUNT(question_id), GROUP_CONCAT(question_id)
-        FROM question
-        WHERE YEAR(create_date) = YEAR(NOW()) AND (MONTH(NOW()) - MONTH(create_date) <= 6)
-        GROUP BY MONTH(create_date);
+CREATE PROCEDURE month_question()
+	BEGIN		
+			WITH CTE2 AS(
+				WITH CTE1 AS (
+					SELECT question_id, MONTH(create_date) AS month_created, COUNT(question_id) AS number_question
+					FROM question
+					WHERE YEAR(create_date) = YEAR(NOW())
+					GROUP BY month_created
+					ORDER BY month_created)
+                    
+				
+				SELECT view12.MONTH, CTE1.number_question
+				FROM view12
+				JOIN CTE1 ON view12.MONTH = CTE1.month_created
+					
+				UNION
+				SELECT view12.MONTH, 'Không có câu hỏi nào trong tháng' AS number_question
+                FROM view12 
+				LEFT JOIN CTE1 ON view12.MONTH = CTE1.month_created
+				WHERE CTE1.month_created IS NULL)
+                
+			SELECT * FROM CTE2
+            ORDER BY MONTH;
 	END $$
 DELIMITER ;
 
