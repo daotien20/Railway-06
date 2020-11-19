@@ -89,16 +89,15 @@ RIGHT JOIN location USING (location_id)
 GROUP BY location_id;
 
 -- Thống kê mỗi country có bao nhiêu employee đang làm việc.
-CREATE OR REPLACE VIEW so_location AS
-	SELECT *, COUNT(location_id) AS s_location
+CREATE OR REPLACE VIEW cac_location AS
+	SELECT *
 	FROM location
-	RIGHT JOIN country USING (country_id)
-	GROUP BY country_id;
+	RIGHT JOIN country USING (country_id);
     
-SELECT * FROM thuc_tap.so_location; -- mỗi country có bao nhiêu location
+SELECT * FROM thuc_tap.cac_location; -- các location ở mỗi country
 
 CREATE OR REPLACE VIEW so_employee AS    
-    SELECT *, COUNT(employee_id) AS s_employee
+    SELECT *, COUNT(employee_id) AS s_employee, GROUP_CONCAT(employee_id)
 	FROM employee
 	RIGHT JOIN location USING (location_id)
 	GROUP BY location_id;
@@ -106,11 +105,10 @@ CREATE OR REPLACE VIEW so_employee AS
 SELECT * FROM thuc_tap.so_employee; -- mỗi location có bao nhiêu employee
     
 CREATE OR REPLACE VIEW employees AS  
-SELECT so_location.country_id, so_location.country_name, COUNT(s_employee) AS so_nhan_vien
-FROM so_employee
-LEFT JOIN so_location USING (location_id)
-GROUP BY so_employee.country_id
-HAVING COUNT(s_employee);
+	SELECT so_employee.country_id, cac_location.country_name, SUM(s_employee) AS so_nhan_vien
+	FROM cac_location
+	RIGHT JOIN so_employee USING (location_id)
+	GROUP BY so_employee.country_id;
 
 SELECT * FROM thuc_tap.employees;
 
@@ -121,12 +119,14 @@ CREATE TRIGGER employee_10
 BEFORE INSERT ON employee
 FOR EACH ROW
 	BEGIN
-		DECLARE so_nv INT;
-        
-        SELECT so_nhan_vien INTO so_nv
-        FROM employees;
-        
-		IF 	so_nv >=1 THEN 
+		DECLARE d_employee TINYINT;
+
+		SELECT SUM(s_employee) INTO d_employee
+		FROM employees
+		WHERE SUM(s_employee) = NEW.SUM(s_employee);
+		
+        IF d_employee >= 10
+		THEN 
 			SIGNAL SQLSTATE '10003'
 			SET MESSAGE_TEXT = 'mỗi quốc gia có tối đa 10 employee';
             
