@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 
 public class Group {
-	short		groupID;
+	int		groupID;
 	String 		groupName;
 	Account		creator;
 	LocalDate	createDate;

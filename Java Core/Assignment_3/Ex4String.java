@@ -16,14 +16,135 @@ public class Ex4String {
 //		question6();
 //		question7();
 //		question8_9();
-		question10();
+//		question10();
+//		question11();
+//		question12();
+////		question13();
+//		question14();
+////		question15();
+//		question16();
 		
 
 	}
 
+	private static void question16() {
+		Scanner scanner = new Scanner(System.in);
+		
+		while(true) {
+			System.out.println("Nhập 1 xâu ký tự bất kỳ: ");
+			String s1 = scanner.nextLine();
+			s1 = s1.trim();	
+			System.out.println(s1);
+			
+			while(true) {
+				System.out.println("Nhập 1 số nguyên bất kỳ: ");
+				int x = scanner.nextInt();
+				scanner.nextLine();
+				if(x >= 0) {
+					if (s1.length() % x == 0) {
+						System.out.println("chia được");
+						break;
+					}else {
+						System.out.println("KO");
+						break;
+					}
+				}else {
+					System.out.println("Mời nhập lại!");
+					continue;
+				}
+			}
+			continue;
+		}
+	}
+
+	private static void question15() {
+	
+	}
+
+	private static void question14() {
+		Scanner scanner = new Scanner(System.in);
+		
+		while(true) {
+			System.out.println("Nhập 1 xâu ký tự bất kỳ: ");
+			String s1 = scanner.nextLine();
+			s1 = s1.trim();	
+			System.out.println(s1);
+
+			scanner.nextLine();
+			System.out.println("Nhập 1 ký tự muốn thay thế: ");
+			String s2 = scanner.next();
+			String s3 = s1.replace(s2, "*");
+			for (int i = 0; i < s1.length(); i++) {
+				if(s1.charAt(i) == s2.charAt(0)) {
+					System.out.println("Kết quả: " + s3);
+					break;
+				}
+			}
+			System.out.println("");
+		}
+	}
+
+	private static String question13() {
+		Scanner scanner = new Scanner(System.in);
+		
+		while(true) {
+			System.out.println("Nhập 1 xâu ký tự bất kỳ: ");
+			String s1 = scanner.nextLine();
+			String regex = "[0-9]+";
+			boolean s2 = s1.contains(regex);
+			if ("[0-9]+" != null, s1, $matches) {
+				System.out.println("False");
+			}else {
+				System.out.println("True");
+			}
+		}	
+	}
+
+	private static void question12() {
+		Scanner scanner = new Scanner(System.in);
+		
+		while(true) {
+			System.out.println("Nhập 1 xâu ký tự bất kỳ: ");
+			String s1 = scanner.nextLine();
+			String s2 = new StringBuilder(s1).reverse().toString();
+			System.out.println("Kết quả: " + s2);
+		}
+	}
+
+	private static void question11() {
+		Scanner scanner = new Scanner(System.in);
+		
+		while(true) {
+			System.out.println("Nhập 1 xâu ký tự bất kỳ: ");
+			String s1 = scanner.nextLine();
+			s1 = s1.trim();
+			s1 = s1.replaceAll("\\s+", "");
+			System.out.println(s1);
+
+			scanner.nextLine();
+			System.out.println("Nhập 1 ký tự muốn đếm: ");
+			char s2 = scanner.next().charAt(0);
+			int answer = 0;
+			for (int i = 0; i < s1.length(); i++) {
+				if(s1.charAt(i) == s2) {
+					answer ++;
+				}
+			}
+			System.out.print("Ký tự " + s2 + " có " + answer + " ký tự.");
+			System.out.println("");
+		}
+	}
+
+
 	private static void question10() {
 		String s1 = "KO";
 		String s2 = "OK";
+		String s3 = new StringBuilder(s1).reverse().toString();
+		if (s2.equals(s3)) {
+			System.out.println("OK");		
+		}else {
+			System.out.println("KO");	
+		}
 		
 		
 	}
@@ -45,17 +166,18 @@ public class Ex4String {
 		group3.createDate = LocalDate.of(2019, 12, 25);
 		
 		Group[] groups = {group1, group2, group3};
-//		String s1 = "Java";
-//		for(int i =0; i < groups.length; i++) {
-//			if (groups[i].groupName.equals(s1))  {
-//				System.out.println("Question 8 ----------------");
-//				System.out.printf(groups[i].toString());
-//				}
-//			}
+		
+		System.out.println("Question 8 ----------------");
+		for(int i =0; i < groups.length; i++) {
+			if (groups[i].groupName.contains("Java"))  {
+				System.out.println(groups[i].toString());
+				}
+			}
+		
 		System.out.println("");	
+		System.out.println("Question 9 ----------------");
 		for(int a =0; a < groups.length; a++) {
 			if (groups[a].groupName == "Java")  {
-				System.out.println("Question 9 ----------------");
 				System.out.println(groups[a].toString());
 			}
 		}

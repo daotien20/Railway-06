@@ -5,7 +5,33 @@ import Assignment_3.Department;
 public class Ex5ObjectsMethod {
 
 	public static void main(String[] args) {
-		question1Toi5();
+//		question1Toi5();		
+		question6();
+		
+	}
+
+	private static void question6() {
+		Department department1 = new Department();
+		department1.departmentID = 1;
+		department1.departmentName = "Accounting";
+
+		Department department2 = new Department();
+		department2.departmentID = 2;
+		department2.departmentName = "Sale";
+
+		Department department3 = new Department();
+		department3.departmentID = 3;
+		department3.departmentName = "Marketing";
+		
+		Department department4 = new Department();
+		department3.departmentID = 4;
+		department3.departmentName = "Boss of director";
+		
+		Department department5 = new Department();
+		department3.departmentID = 5;
+		department3.departmentName = "Waiting room";
+		
+		Department[] departments = {department1, department2, department3, department4, department5};
 		
 	}
 

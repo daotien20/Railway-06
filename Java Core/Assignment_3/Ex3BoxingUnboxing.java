@@ -3,10 +3,10 @@ package Assignment_3;
 public class Ex3BoxingUnboxing {
 
 	public static void main(String[] args) {
-		question1();
-		question2();
-		question3();
-		
+//		question1();
+//		question2();
+//		question3();
+//		
 		
 	}
 

@@ -7,13 +7,13 @@ public class TestEx4RandomNumber {
 
 	public static void main(String[] args) {
 		
-		question1();
-		question2();
-		question3();
-		question4();
+//		question1();
+//		question2();
+//		question3();
+//		question4();
 //		question5();
-		question6();
-		question7();
+////		question6();
+//		question7();
 		
 
 //		Random	random = new Random();
@@ -31,17 +31,30 @@ public class TestEx4RandomNumber {
 	}
 
 	private static void question7() {
-
+		Random random = new Random();
+		int x = random.nextInt(999 - 100 + 1) + 100;
+		System.out.println(x);
 	}
 
 	private static void question6() {
 		
 	}
 
-//	private static void question5() {
-//		Random random = new Random();
-//		int today = (int) LocalDate.now();
-//	}
+	private static void question5() {
+		Random random = new Random();
+		int minDate = (int) LocalDate.of(2019, 11, 27).toEpochDay();
+		int maxDate = (int) LocalDate.of(2020, 11, 27).toEpochDay();
+
+		long randomLong = minDate + random.nextInt(maxDate - minDate);
+		
+		int today = (int) LocalDate.now().toEpochDay();
+
+		randomLong = today - (int) (Math.random() * (364 - 1 + 1) + 1);
+
+		LocalDate randomDate = LocalDate.ofEpochDay(randomLong);
+		System.out.println(randomDate);
+
+	}
 
 	private static void question4() {
 		Random random = new Random();
